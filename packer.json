@@ -1,0 +1,45 @@
+{
+  "_Author" : "John Williams",
+  "_Site"   : "https://github.com/40aujohnwilliams/terraform-demo-app",
+
+  "variables" : {
+    "aws_access_key" : "",
+    "aws_secret_key" : "",
+    "aws_region" : "us-east-1",
+    "aws_subnet" : "subnet-55860731",
+    "aws_ami" : "ami-8c1be5f6",
+    "aws_instance_type" : "t2.micro"
+  },
+
+  "builders" : [
+    {
+      "type" : "amazon-ebs",
+      "access_key" : "{{user `aws_access_key`}}",
+      "secret_key" : "{{user `aws_secret_key`}}",
+      "region" : "{{user `aws_region`}}",
+      "subnet_id" : "{{user `aws_subnet`}}",
+      "source_ami" : "{{user `aws_ami`}}",
+      "instance_type" : "{{user `aws_instance_type`}}",
+      "ssh_username" : "ec2-user",
+      "ami_name" : "terraform-demo-app-{{timestamp}}"
+    }
+  ],
+
+  "provisioners" : [
+    {
+      "type" : "file",
+      "source" : "./target/terraformdemoapp-1.0.0.jar",
+      "destination" : "./terraformdemoapp.jar"
+    },
+    {
+      "type" : "shell",
+      "inline" : [
+        "sudo yum install -y java-1.8.0",
+        "sudo yum remove -y java-1.7.0-openjdk",
+        "chmod +x terraformdemoapp.jar",
+        "sudo ln -s `pwd`/terraformdemoapp.jar /etc/init.d/",
+        "sudo chkconfig terraformdemoapp.jar on"
+      ]
+    }
+  ]
+}
